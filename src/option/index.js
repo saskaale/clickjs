@@ -12,7 +12,6 @@ function createOption(name, params){
     }
 
     return new DefaultOption(name, params);
-
 }
 
 export {createOption};

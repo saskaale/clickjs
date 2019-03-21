@@ -1,6 +1,7 @@
 import Click from '../src/index';
 
-class SubCommand extends Click{
+@Click.group()
+class SubCommand{
     @Click.command("2")
     evaluate2(){
         console.log("command run 2()")
@@ -13,11 +14,11 @@ class SubCommand extends Click{
         console.log("command run 1()");
         console.log(params);
     }
-
 }
 
-
-class Command extends Click{
+//@SubCommand.command()
+@Click.group()
+class Command{
 /*    @Click.group()
     all(...args){
         new SubCommand().run(...args);
