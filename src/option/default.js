@@ -1,3 +1,11 @@
+function readFromStdin(){
+    process.stdin.resume();
+    var fs = require('fs');
+    var response = fs.readSync(process.stdin.fd, 1000, 0, "utf8");
+    process.stdin.pause();
+    return response;
+}
+
 export default class DefaultOption{
     constructor(name, params){
         this._name = name;
@@ -13,24 +21,39 @@ export default class DefaultOption{
         }
     }
 
+    _parseValue(value){
+        
+    }
+
     value(ctx, cmdargs){
         const arg0 = this._splitArgToKeyVal(cmdargs[0]);
+
+        let ret;
         if(arg0.length > 1){
-            return arg0[1]
+            ret = arg0[1];
+        }else{
+            ret = cmdargs[1];
         }
 
-        return cmdargs[1];
+        return this._parseValue(ret);
     }
 
     isNeeded(){
-        return this._params.default === undefined;
+        return this._params.default === undefined && this._params.prompt;
     }
 
     defaultVal(){
         if(typeof this._params.default === 'function'){
             return this._params.default();
         }
-        return this._params.default;
+        if(this._params.default !== undefined){
+            return this._params.default;
+        }
+        
+        //reade from prompt
+        process.stdout.write(`${this._params.prompt}:`);
+        let readed = readFromStdin();
+        return this._parseValue(readed);
     }
 
     help(){
