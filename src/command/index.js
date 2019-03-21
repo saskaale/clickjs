@@ -1,4 +1,6 @@
 import {str2Arr} from '../utils';
+import { createOption } from '../option';
+import HelpOption from '../option/help';
 
 export default class Command{
     constructor(data){
@@ -27,6 +29,23 @@ export default class Command{
         return true;
     }
 
+    _getOptions(){
+        const {fun} = this._data;
+        return fun._options.concat([new HelpOption()]);
+    }
+
+    help(){
+        let helpText = this._help ? ['', '          '+this._help] : [];
+    
+        let text = helpText.concat([
+            '',
+            'Options:']).concat(
+                this._getOptions().map(e=>'          '+e.help())
+            );
+        return text.filter(e=>e !== undefined).join('\n');
+
+    }
+
     parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
         const parsedArgs = optsDefinition.map(e=>false);
         
@@ -35,14 +54,14 @@ export default class Command{
             for( let i = 0; i < optsDefinition.length; ++i ){
                 const optRepresentation = optsDefinition[i];
 
-                const matchedLength = optRepresentation.match(cmdargs);
+                const matchedLength = optRepresentation.match(this,cmdargs);
 
                 if(matchedLength > 0){
                     if(parsedArgs[i]){
                         //TODO: add error for reuse of options
                         console.warn(`error of reusing option >>${optRepresentation.key()}<<`)
                     }
-                    parsedParams[optRepresentation.key()] = optRepresentation.value(cmdargs);
+                    parsedParams[optRepresentation.key(this)] = optRepresentation.value(this,cmdargs);
                     parsedArgs[i] = true;
 
                     shiftBy = matchedLength;
@@ -80,8 +99,9 @@ export default class Command{
     execute(ctx, cmdargs, options = [], parsedParams = {}){
         const {fun} = this._data;
 
+        options = options.concat(this._getOptions());
 
-        parsedParams = this.parseCmdOptions(ctx, cmdargs, options.concat(fun._options), parsedParams);
+        parsedParams = this.parseCmdOptions(ctx, cmdargs, options, parsedParams);
 
         fun.value.call(ctx, parsedParams);
     }

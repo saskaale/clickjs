@@ -68,12 +68,21 @@ function argument(name, params = {}){
     }
 }
 
+function help(text){
+    return function (target, key, descriptor) {
+        _ensureParams(descriptor);
+        descriptor._help = text;
+        return descriptor;
+    }
+}
+
 
 const Click = {
     group,
     argument,
     option,
     command,
+    help
 }
 
 
