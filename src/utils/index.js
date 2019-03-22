@@ -6,7 +6,7 @@ function str2Arr(val){
     return val;    
 }
 
-function print_help_msg(exit = false){
+function print_help_msg(){
     let text = [
         'Usage:',
         '',
@@ -25,7 +25,7 @@ function print_help_msg(exit = false){
     }
 
     const options = this._getOptions();
-    if(options.length){
+    if(options.length > 1){ //1 for --help option
         text = text.concat([
             '',
             'Options:',
@@ -45,10 +45,6 @@ function print_help_msg(exit = false){
     }
 
     console.log(text.join('\n'));
-
-    if(exit){
-        process.exit(0);
-    }
 }
 
 export {str2Arr, print_help_msg, ArgOption}

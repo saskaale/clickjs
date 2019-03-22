@@ -1,5 +1,5 @@
 import {str2Arr, print_help_msg} from './utils';
-import {createOption} from './option';
+import {createOption, helpOption} from './option';
 import {createCommand} from './command';
 import {createArgument} from './argument';
 
@@ -17,33 +17,33 @@ function _ensureCommands(target){
 }
 
 function command(name, props){
-
+/*
     return function (target, key, descriptor) {
         _ensureCommands(target);
         _ensureParams(descriptor);
         target._commands.push(createCommand(name, {fun: descriptor}));
         return descriptor;
-    }    
-
-/*    class MyCommand{
+    }
+*/    
+    class MyCommand{
         constructor(fun){
             this._fun = fun;
         }
     }
-    const Command = createGroup(MyCommand, name, props);
-
     return function (target, key, descriptor) {
+        const Command = createGroup(MyCommand, name, {...props, _fun: descriptor} );
+
         _ensureCommands(target);
         _ensureParams(descriptor);
 
         target._commands.push(new Command(descriptor));
         return descriptor;
     }
-*/
 
 }
 
-function createGroup(target, name, props) {
+function createGroup(target, name, props = {}) {
+    name = str2Arr(name);
     const Group = class extends target{
         static _isClick = true;
 
@@ -56,19 +56,21 @@ function createGroup(target, name, props) {
         }
 
         _getOptions(){
-            return this._options || [];
+            const options = (props._fun ? props._fun._options : this._options) || [];
+
+            return options.concat([helpOption]);
         }
 
         _getArguments(){
-            return this._arguments || [];
+            return (props._fun ? props._fun._arguments : this._arguments) || [];
         }
 
         print_help_msg(){
-            print_help_msg.apply(this, arguments);
+            print_help_msg.call(this);
         }
                 
         help(){
-            return props._help;
+            return `${(name ? name.join(',') : "").padEnd(20,' ')} ${props._help}`;
         }
 
         match(ctx, cliargs){
@@ -173,15 +175,16 @@ function createGroup(target, name, props) {
                 }
             }
 
-/*            const fun = this._fun;
+            const fun = props._fun;
             if(fun){
                 options = options.concat(this._getOptions()).concat(this._getArguments());
                 cmdargs = await this.parseCmdOptions(ctx, cmdargs, options, parsedParams);    
                 fun.value.call(ctx, parsedParams);    
             }
-*/
+
             if(commands.length && matches <= 0){
-                this.print_help_msg(true);
+                this.print_help_msg();
+                process.exit(0);
             }
         }
     };

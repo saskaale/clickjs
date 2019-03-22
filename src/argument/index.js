@@ -41,7 +41,7 @@ export default class Argument extends ArgOption{
     }
 
     async value(ctx, cmdargs){
-        return this._parseValue(cmdargs[0]);
+        return this._parseValue(ctx, cmdargs[0]);
     }
 }
 

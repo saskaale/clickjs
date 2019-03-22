@@ -6,15 +6,11 @@ export default class HelpOption extends DefaultOption{
     }
 
     value(ctx){
-        ctx.print_help_msg(true);
+        ctx.print_help_msg();
+        process.exit(0);
     }
 
     isNeeded(){
         return false;
-    }
-
-    key(){
-        const key = this._name[this._name.length - 1][0];
-        return key.replace(/^\-[0-2]/g, '').toLowerCase();
     }
 }

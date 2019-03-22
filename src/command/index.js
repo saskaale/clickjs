@@ -1,5 +1,5 @@
 import {str2Arr, print_help_msg} from '../utils';
-import HelpOption from '../option/help';
+import helpOption from '../option/help';
 
 export default class Command{
     constructor(name, data){
@@ -33,7 +33,7 @@ export default class Command{
 
     _getOptions(){
         const {fun} = this._data;
-        return fun._options.concat([new HelpOption()]);
+        return fun._options.concat([helpOption]);
     }
 
     _getArguments(){
@@ -46,7 +46,7 @@ export default class Command{
     }
     
     print_help_msg(){
-        print_help_msg.apply(this, arguments);
+        print_help_msg.apply(this);
     }
 
     async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){

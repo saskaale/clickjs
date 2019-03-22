@@ -1,7 +1,11 @@
 import DefaultOption from './default';
 import BooleanOption from './boolean';
+import HelpOption    from './help';
 
 import {str2Arr} from '../utils';
+
+
+const helpOption = new HelpOption();
 
 
 function createOption(name, params){
@@ -14,5 +18,5 @@ function createOption(name, params){
     return new DefaultOption(name, params);
 }
 
-export {createOption};
+export {createOption, helpOption};
 
