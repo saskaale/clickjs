@@ -4,6 +4,7 @@ import Click from '../src/index';
 class Command{
     @Click.command("2")
     @Click.argument("value")
+    @Click.argument("value2")
     evaluate2(params){
         console.log("command run 2()")
         console.log(params);

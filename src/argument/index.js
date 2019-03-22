@@ -19,6 +19,10 @@ export default class Argument extends ArgOption{
         return `<${this._name}>`;
     }
 
+    isNeeded(){
+        return true;
+    }
+
     help(){
         let ret = `<${this._name}>`.padEnd(10,' ');
         if(this._params.help){
@@ -33,7 +37,7 @@ export default class Argument extends ArgOption{
     }
 
     match(ctx, cmdargs){
-        return cmdargs.length > 0;
+        return cmdargs.length > 0 ? 1 : 0;
     }
 
     async value(ctx, cmdargs){

@@ -1,9 +1,9 @@
-import { readStdinSync, ArgOption } from '../utils';
+import { ArgOption } from '../utils';
 
 export default class DefaultOption extends ArgOption{
     constructor(name, params){
         super();
-        
+
         this._name = name;
         this._params = params;
     }
@@ -31,22 +31,6 @@ export default class DefaultOption extends ArgOption{
 
     isNeeded(){
         return this._params.default === undefined && this._params.prompt !== undefined;
-    }
-
-    async defaultVal(){
-        if(typeof this._params.default === 'function'){
-            return this._params.default();
-        }
-        if(this._params.default !== undefined){
-            return this._params.default;
-        }
-        
-        //reade from prompt
-        if(this._params.prompt){
-            process.stdout.write(`${this._params.prompt}:`);
-            let readed = await readStdinSync();
-            return this._parseValue(readed);
-        }
     }
 
     help(ctx){

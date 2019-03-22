@@ -54,7 +54,7 @@ export default class Command{
 
     }
 
-    async parseCmdArguments(ctx, cmdargs, argsDefinition, parsedParams = {}){
+/*    async parseCmdArguments(ctx, cmdargs, argsDefinition, parsedParams = {}){
         for(let i = 0; i < argsDefinition.length; ++i){
             const argRepresentation = argsDefinition[i];
 
@@ -71,9 +71,9 @@ export default class Command{
 
         return cmdargs;
     }
-
+*/
     async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
-        const parsedArgs = optsDefinition.map(e=>false);
+        const parsedArgs = optsDefinition.map(e=>0);
         
         while(cmdargs.length > 0){
             let shiftBy = undefined;
@@ -83,12 +83,16 @@ export default class Command{
                 const matchedLength = optRepresentation.match(this,cmdargs);
 
                 if(matchedLength > 0){
+                    if(parsedArgs[i] && !optRepresentation.reuse(this, parsedArgs[i])){
+                        continue;
+                    }
+        
                     if(parsedArgs[i]){
                         //TODO: add error for reuse of options
                         console.warn(`error of reusing option >>${optRepresentation.key()}<<`)
                     }
                     parsedParams[optRepresentation.key(this)] = await optRepresentation.value(this,cmdargs);
-                    parsedArgs[i] = true;
+                    parsedArgs[i]++;
 
                     shiftBy = matchedLength;
                     break;
@@ -111,7 +115,7 @@ export default class Command{
                 const defaultVal = await arg.defaultVal();
                 if(defaultVal){
                     parsedParams[arg.key()] = defaultVal;
-                    parsedArgs[i] = true;    
+                    parsedArgs[i]++;    
                 }
             }
         }
@@ -129,10 +133,10 @@ export default class Command{
     async execute(ctx, cmdargs, options = [], parsedParams = {}){
         const {fun} = this._data;
 
-        options = options.concat(this._getOptions());
-        const args = this._getArguments();
+        options = options.concat(this._getOptions()).concat(this._getArguments());
+//        const args = this._getArguments();
 
-        cmdargs = await this.parseCmdArguments(ctx, cmdargs, args, parsedParams);
+//        cmdargs = await this.parseCmdArguments(ctx, cmdargs, args, parsedParams);
         cmdargs = await this.parseCmdOptions(ctx, cmdargs, options, parsedParams);
 
         fun.value.call(ctx, parsedParams);

@@ -19,19 +19,31 @@ async function readStdinSync() {
     })
 }
 
-function str2Arr(val){
-    if(typeof val === 'string')
-        return [val];
-    return val;    
-}
-
-class ArgOption{
+export default class ArgOption{
     _parseValue(value){
         //TODO: do argument validation and parsing
         if(this._params.callback)
             value = this._params.callback(ctx, this.key(), value);
         return value;
     }
-}
 
-export {str2Arr, readStdinSync, ArgOption}
+    reuse(readed){
+        return readed <= 0;
+    }
+
+    async defaultVal(){
+        if(typeof this._params.default === 'function'){
+            return this._params.default();
+        }
+        if(this._params.default !== undefined){
+            return this._params.default;
+        }
+        
+        //reade from prompt
+        if(this._params.prompt){
+            process.stdout.write(`${this._params.prompt}:`);
+            let readed = await readStdinSync();
+            return this._parseValue(readed);
+        }
+    }
+}
