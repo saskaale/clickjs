@@ -1,10 +1,12 @@
 import Click from '../src/index';
 
 @Click.group()
-class SubCommand{
+class Command{
     @Click.command("2")
-    evaluate2(){
+    @Click.argument("value")
+    evaluate2(params){
         console.log("command run 2()")
+        console.log(params);
     }
 
     @Click.command("1")
@@ -16,25 +18,19 @@ class SubCommand{
     }
 }
 
-//@SubCommand.command()
-@Click.group()
-class Command{
-/*    @Click.group()
-    all(...args){
-        new SubCommand().run(...args);
-        console.log("command all")
-    }
-*/
+@Command.group("3")
+class SubCommand{
     @Click.command("2")
-    evaluate2(){
-        console.log("command run 2()")
+    evaluate2(params){
+        console.log("command run 3-2()");
+        console.log(params);
     }
 
     @Click.command("1")
     @Click.option("name")
     @Click.option("name2", {default: '12'})
     evaluate1(params){
-        console.log("command run 1()");
+        console.log("command run 3-1()");
         console.log(params);
     }
 }

@@ -3,26 +3,25 @@ import { createOption } from '../option';
 import HelpOption from '../option/help';
 
 export default class Command{
-    constructor(data){
+    constructor(name, data){
         this._data = data;
+        this._name = name;
     }
 
     arglength(){
-        const {params: {name}} = this._data;
-        return name ? str2Arr(name).length : 0;
+        const name = this._name;
+        return name ? name.length : 0;
     }
 
     match(ctx, cliargs){
-        const {params: {name}} = this._data;
+        const name = this._name;
 
         if(name === undefined){
             return true;
         }
 
-        let names = str2Arr(name);
-
-        for(let i = 0; i < names.length; ++i){
-            if(cliargs[i] != names[i])
+        for(let i = 0; i < name.length; ++i){
+            if(cliargs[i] != name[i])
                 return false;
         }
 
@@ -34,10 +33,19 @@ export default class Command{
         return fun._options.concat([new HelpOption()]);
     }
 
+    _getArguments(){
+        const {fun} = this._data;
+        return fun._arguments;
+    }
+
     help(){
         let helpText = this._help ? ['', '          '+this._help] : [];
     
         let text = helpText.concat([
+            '',
+            'Arguments:']).concat(
+                this._getArguments().map(e=>'          '+e.help())
+            ).concat([
             '',
             'Options:']).concat(
                 this._getOptions().map(e=>'          '+e.help())
@@ -46,7 +54,25 @@ export default class Command{
 
     }
 
-    parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
+    async parseCmdArguments(ctx, cmdargs, argsDefinition, parsedParams = {}){
+        for(let i = 0; i < argsDefinition.length; ++i){
+            const argRepresentation = argsDefinition[i];
+
+            if(!argRepresentation.match(this, cmdargs)){
+                //TODO: add error for unparsed argument
+                console.warn(`unparsed argument >>${argRepresentation.key()}<<`)
+            }
+
+            parsedParams[argRepresentation.key(this)] = await argRepresentation.value(this,cmdargs);
+
+            //TODO: Possible use array.shift() ???
+            cmdargs = cmdargs.slice(1);
+        }
+
+        return cmdargs;
+    }
+
+    async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
         const parsedArgs = optsDefinition.map(e=>false);
         
         while(cmdargs.length > 0){
@@ -61,7 +87,7 @@ export default class Command{
                         //TODO: add error for reuse of options
                         console.warn(`error of reusing option >>${optRepresentation.key()}<<`)
                     }
-                    parsedParams[optRepresentation.key(this)] = optRepresentation.value(this,cmdargs);
+                    parsedParams[optRepresentation.key(this)] = await optRepresentation.value(this,cmdargs);
                     parsedArgs[i] = true;
 
                     shiftBy = matchedLength;
@@ -79,12 +105,16 @@ export default class Command{
         }
 
         //parse default options
-        optsDefinition.forEach((arg, i) => {
-                if(!parsedArgs[i] && arg.defaultVal()){
-                    parsedParams[arg.key()] = arg.defaultVal();
-                    parsedArgs[i] = true;
+        for(let i = 0; i < optsDefinition.length; ++i){
+            const arg = optsDefinition[i];
+            if(!parsedArgs[i]){
+                const defaultVal = await arg.defaultVal();
+                if(defaultVal){
+                    parsedParams[arg.key()] = defaultVal;
+                    parsedArgs[i] = true;    
                 }
-            });
+            }
+        }
 
         //check for not parsed neccessary options
         const missingOption = optsDefinition.find((arg, i) => !parsedArgs[i] && arg.isNeeded());
@@ -96,19 +126,21 @@ export default class Command{
         return parsedParams;
     }
 
-    execute(ctx, cmdargs, options = [], parsedParams = {}){
+    async execute(ctx, cmdargs, options = [], parsedParams = {}){
         const {fun} = this._data;
 
         options = options.concat(this._getOptions());
+        const args = this._getArguments();
 
-        parsedParams = this.parseCmdOptions(ctx, cmdargs, options, parsedParams);
+        cmdargs = await this.parseCmdArguments(ctx, cmdargs, args, parsedParams);
+        cmdargs = await this.parseCmdOptions(ctx, cmdargs, options, parsedParams);
 
         fun.value.call(ctx, parsedParams);
     }
 }
 
-function createCommand(...args){
-    return new Command(...args);
+function createCommand(name, data){
+    return new Command(str2Arr(name), data);
 }
 
 export {createCommand};

@@ -1,9 +1,10 @@
 import {str2Arr} from './utils';
 import {createOption} from './option';
 import {createCommand} from './command';
+import {createArgument} from './argument';
 
 
-function _ensureParams(_,_2,descriptor){
+function _ensureParams(descriptor){
     if(!descriptor._arguments)
         descriptor._arguments = [];
     if(!descriptor._options)
@@ -18,43 +19,73 @@ function _ensureCommands(target){
 function command(name){
     return function (target, key, descriptor) {
         _ensureCommands(target);
-        _ensureParams(target, key, descriptor);
-        target._commands.push(createCommand({params: {name}, fun: descriptor}));
+        _ensureParams(descriptor);
+        target._commands.push(createCommand(name, {fun: descriptor}));
         return descriptor;
     }
 }
 
-function group(){
-    return function (target) {
-        if(target._isClick === undefined)
-            return class extends target{
-                static _isClick = true;
+function createGroup(name, target) {
+    const Group = class extends target{
+        static _isClick = true;
 
-                run(){
-                    //preprocess into object/key value
-            
-                    const args = process.argv.slice(2);
-            
-                    this.execute(args);
+        arglength(){
+            return name ? name.length : 0;
+        }
+
+        match(ctx, cliargs){
+            if(name === undefined){
+                return true;
+            }
+    
+            for(let i = 0; i < name.length; ++i){
+                if(cliargs[i] != name[i])
+                    return false;
+            }
+    
+            return true;
+        }            
+
+        async run(){
+            //preprocess into object/key value
+    
+            const args = process.argv.slice(2);
+
+            await this.execute(this, args);
+        }
+
+        static group(name){
+            const self = Group.prototype;
+            return function (target) {
+                _ensureCommands(self);
+                const newgroup = createGroup(name, target);
+                self._commands.push(new newgroup());
+                return newgroup;
+            }
+        }
+    
+        async execute(ctx, cmdargs, ...rest){
+            for(let i = 0; i < this._commands.length; i++){
+                const command = this._commands[i];
+                if(command.match(this, cmdargs)){
+                    const arglength = command.arglength();
+                    await command.execute(ctx, cmdargs.slice(arglength), ...rest);
                 }
-            
-                execute(cmdargs, ...rest){
-                    for(let i = 0; i < this._commands.length; i++){
-                        const command = this._commands[i];
-                        if(command.match(this, cmdargs)){
-                            const arglength = command.arglength();
-                            command.execute(this, cmdargs.slice(arglength), ...rest);
-                        }
-                    }
-                }                
-            };
-        return target;
-    }
+            }
+        }                
+    };
+    _ensureCommands(Group);
+    return Group;
+}
+
+function group(name){
+    name = str2Arr(name);
+    return (target) => createGroup(name, target);
 }
 
 function option(name, params = {}){
     return function (target, key, descriptor) {
-        _ensureParams(target, key, descriptor);
+        _ensureParams(descriptor);
         descriptor._options.push(createOption(name, params))
         return descriptor;
     }
@@ -62,8 +93,8 @@ function option(name, params = {}){
 
 function argument(name, params = {}){
     return function (target, key, descriptor) {
-        _ensureParams(target, key, descriptor);
-        descriptor._arguments.push(new Argument(name, params))
+        _ensureParams(descriptor);
+        descriptor._arguments.push(createArgument(name, params))
         return descriptor;
     }
 }

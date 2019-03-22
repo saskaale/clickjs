@@ -1,16 +1,11 @@
-function readFromStdin(){
-    process.stdin.resume();
-    var fs = require('fs');
-    var response = fs.readSync(process.stdin.fd, 1000, 0, "utf8");
-    process.stdin.pause();
-    return response;
-}
+import { readStdinSync, ArgOption } from '../utils';
 
-export default class DefaultOption{
+export default class DefaultOption extends ArgOption{
     constructor(name, params){
+        super();
+        
         this._name = name;
         this._params = params;
-        
     }
 
     _splitArgToKeyVal(arg){
@@ -21,11 +16,7 @@ export default class DefaultOption{
         }
     }
 
-    _parseValue(value){
-        
-    }
-
-    value(ctx, cmdargs){
+    async value(ctx, cmdargs){
         const arg0 = this._splitArgToKeyVal(cmdargs[0]);
 
         let ret;
@@ -35,14 +26,14 @@ export default class DefaultOption{
             ret = cmdargs[1];
         }
 
-        return this._parseValue(ret);
+        return this._parseValue(ctx, ret);
     }
 
     isNeeded(){
-        return this._params.default === undefined && this._params.prompt;
+        return this._params.default === undefined && this._params.prompt !== undefined;
     }
 
-    defaultVal(){
+    async defaultVal(){
         if(typeof this._params.default === 'function'){
             return this._params.default();
         }
@@ -51,12 +42,14 @@ export default class DefaultOption{
         }
         
         //reade from prompt
-        process.stdout.write(`${this._params.prompt}:`);
-        let readed = readFromStdin();
-        return this._parseValue(readed);
+        if(this._params.prompt){
+            process.stdout.write(`${this._params.prompt}:`);
+            let readed = await readStdinSync();
+            return this._parseValue(readed);
+        }
     }
 
-    help(){
+    help(ctx){
         let text = this._name.join(" ").padEnd(25,' ');
 
         if(this._params.help){
