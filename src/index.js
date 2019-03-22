@@ -1,6 +1,5 @@
 import {str2Arr, print_help_msg} from './utils';
 import {createOption, helpOption} from './option';
-import {createCommand} from './command';
 import {createArgument} from './argument';
 
 
@@ -17,14 +16,6 @@ function _ensureCommands(target){
 }
 
 function command(name, props){
-/*
-    return function (target, key, descriptor) {
-        _ensureCommands(target);
-        _ensureParams(descriptor);
-        target._commands.push(createCommand(name, {fun: descriptor}));
-        return descriptor;
-    }
-*/    
     class MyCommand{
         constructor(fun){
             this._fun = fun;
