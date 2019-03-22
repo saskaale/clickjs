@@ -26,7 +26,7 @@ export default class DefaultOption extends ArgOption{
             ret = cmdargs[1];
         }
 
-        return this._parseValue(ctx, ret);
+        return await this._parseValue(ctx, ret);
     }
 
     isNeeded(){

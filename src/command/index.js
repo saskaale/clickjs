@@ -1,5 +1,4 @@
-import {str2Arr} from '../utils';
-import { createOption } from '../option';
+import {str2Arr, print_help_msg} from '../utils';
 import HelpOption from '../option/help';
 
 export default class Command{
@@ -28,6 +27,10 @@ export default class Command{
         return true;
     }
 
+    _getCommands(){
+        return [];
+    }
+
     _getOptions(){
         const {fun} = this._data;
         return fun._options.concat([new HelpOption()]);
@@ -39,39 +42,13 @@ export default class Command{
     }
 
     help(){
-        let helpText = this._help ? ['', '          '+this._help] : [];
+        return this._help;
+    }
     
-        let text = helpText.concat([
-            '',
-            'Arguments:']).concat(
-                this._getArguments().map(e=>'          '+e.help())
-            ).concat([
-            '',
-            'Options:']).concat(
-                this._getOptions().map(e=>'          '+e.help())
-            );
-        return text.filter(e=>e !== undefined).join('\n');
-
+    print_help_msg(){
+        print_help_msg.apply(this, arguments);
     }
 
-/*    async parseCmdArguments(ctx, cmdargs, argsDefinition, parsedParams = {}){
-        for(let i = 0; i < argsDefinition.length; ++i){
-            const argRepresentation = argsDefinition[i];
-
-            if(!argRepresentation.match(this, cmdargs)){
-                //TODO: add error for unparsed argument
-                console.warn(`unparsed argument >>${argRepresentation.key()}<<`)
-            }
-
-            parsedParams[argRepresentation.key(this)] = await argRepresentation.value(this,cmdargs);
-
-            //TODO: Possible use array.shift() ???
-            cmdargs = cmdargs.slice(1);
-        }
-
-        return cmdargs;
-    }
-*/
     async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
         const parsedArgs = optsDefinition.map(e=>0);
         
@@ -91,6 +68,8 @@ export default class Command{
                         //TODO: add error for reuse of options
                         console.warn(`error of reusing option >>${optRepresentation.key()}<<`)
                     }
+
+                    const v = await optRepresentation.value(this,cmdargs);
                     parsedParams[optRepresentation.key(this)] = await optRepresentation.value(this,cmdargs);
                     parsedArgs[i]++;
 
@@ -134,9 +113,7 @@ export default class Command{
         const {fun} = this._data;
 
         options = options.concat(this._getOptions()).concat(this._getArguments());
-//        const args = this._getArguments();
 
-//        cmdargs = await this.parseCmdArguments(ctx, cmdargs, args, parsedParams);
         cmdargs = await this.parseCmdOptions(ctx, cmdargs, options, parsedParams);
 
         fun.value.call(ctx, parsedParams);

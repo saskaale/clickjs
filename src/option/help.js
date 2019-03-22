@@ -6,8 +6,7 @@ export default class HelpOption extends DefaultOption{
     }
 
     value(ctx){
-        console.log(ctx.help())
-        process.exit(0);
+        ctx.print_help_msg(true);
     }
 
     isNeeded(){

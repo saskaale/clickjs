@@ -1,4 +1,4 @@
-import {str2Arr} from './utils';
+import {str2Arr, print_help_msg} from './utils';
 import {createOption} from './option';
 import {createCommand} from './command';
 import {createArgument} from './argument';
@@ -16,21 +16,59 @@ function _ensureCommands(target){
         target._commands = [];
 }
 
-function command(name){
+function command(name, props){
+
     return function (target, key, descriptor) {
         _ensureCommands(target);
         _ensureParams(descriptor);
         target._commands.push(createCommand(name, {fun: descriptor}));
         return descriptor;
+    }    
+
+/*    class MyCommand{
+        constructor(fun){
+            this._fun = fun;
+        }
     }
+    const Command = createGroup(MyCommand, name, props);
+
+    return function (target, key, descriptor) {
+        _ensureCommands(target);
+        _ensureParams(descriptor);
+
+        target._commands.push(new Command(descriptor));
+        return descriptor;
+    }
+*/
+
 }
 
-function createGroup(name, target) {
+function createGroup(target, name, props) {
     const Group = class extends target{
         static _isClick = true;
 
         arglength(){
             return name ? name.length : 0;
+        }
+
+        _getCommands(){
+            return this._commands || [];
+        }
+
+        _getOptions(){
+            return this._options || [];
+        }
+
+        _getArguments(){
+            return this._arguments || [];
+        }
+
+        print_help_msg(){
+            print_help_msg.apply(this, arguments);
+        }
+                
+        help(){
+            return props._help;
         }
 
         match(ctx, cliargs){
@@ -44,7 +82,7 @@ function createGroup(name, target) {
             }
     
             return true;
-        }            
+        }
 
         async run(){
             //preprocess into object/key value
@@ -54,33 +92,106 @@ function createGroup(name, target) {
             await this.execute(this, args);
         }
 
-        static group(name){
+        static group(name, props = {}){
             const self = Group.prototype;
             return function (target) {
                 _ensureCommands(self);
-                const newgroup = createGroup(name, target);
+                const newgroup = createGroup(target, name, props);
                 self._commands.push(new newgroup());
                 return newgroup;
             }
         }
     
-        async execute(ctx, cmdargs, ...rest){
-            for(let i = 0; i < this._commands.length; i++){
-                const command = this._commands[i];
-                if(command.match(this, cmdargs)){
-                    const arglength = command.arglength();
-                    await command.execute(ctx, cmdargs.slice(arglength), ...rest);
+        async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
+            const parsedArgs = optsDefinition.map(e=>0);
+
+            while(cmdargs.length > 0){
+                let shiftBy = undefined;
+                for( let i = 0; i < optsDefinition.length; ++i ){
+                    const optRepresentation = optsDefinition[i];
+    
+                    const matchedLength = optRepresentation.match(this,cmdargs);
+    
+                    if(matchedLength > 0){
+                        if(parsedArgs[i] && !optRepresentation.reuse(this, parsedArgs[i])){
+                            continue;
+                        }
+            
+                        if(parsedArgs[i]){
+                            //TODO: add error for reuse of options
+                            console.warn(`error of reusing option >>${optRepresentation.key()}<<`)
+                        }
+                        parsedParams[optRepresentation.key(this)] = await optRepresentation.value(this,cmdargs);
+                        parsedArgs[i]++;
+    
+                        shiftBy = matchedLength;
+                        break;
+                    }
+                }
+    
+                if(shiftBy <= 0){
+                    //TODO: add unparsed option error
+                    console.warn(`Unrecognized argument >>${cmdargs[0]}<<`);
+                }
+    
+                //TODO: Possible use array.shift() ???
+                cmdargs = cmdargs.slice(shiftBy || 1);
+            }
+    
+            //parse default options
+            for(let i = 0; i < optsDefinition.length; ++i){
+                const arg = optsDefinition[i];
+                if(!parsedArgs[i]){
+                    const defaultVal = await arg.defaultVal();
+                    if(defaultVal){
+                        parsedParams[arg.key()] = defaultVal;
+                        parsedArgs[i]++;    
+                    }
                 }
             }
-        }                
+    
+            //check for not parsed neccessary options
+            const missingOption = optsDefinition.find((arg, i) => !parsedArgs[i] && arg.isNeeded());
+            if(missingOption){
+                //TODO: missing option error
+                console.warn(`Missing option >>${missingOption.key()}<<`);
+            }
+    
+            return parsedParams;
+        }    
+
+        async execute(ctx, cmdargs, options = [], parsedParams = {}, ...rest){
+            const commands = this._getCommands();
+
+            let matches = 0;
+            for(let i = 0; i < commands.length; i++){
+                const command = commands[i];
+                if(command.match(this, cmdargs)){
+                    const arglength = command.arglength();
+                    await command.execute(ctx, cmdargs.slice(arglength), options, parsedParams, ...rest);
+                    matches++;
+                }
+            }
+
+/*            const fun = this._fun;
+            if(fun){
+                options = options.concat(this._getOptions()).concat(this._getArguments());
+                cmdargs = await this.parseCmdOptions(ctx, cmdargs, options, parsedParams);    
+                fun.value.call(ctx, parsedParams);    
+            }
+*/
+            if(commands.length && matches <= 0){
+                this.print_help_msg(true);
+            }
+        }
     };
     _ensureCommands(Group);
     return Group;
 }
 
-function group(name){
+function group(name, props = {}){
     name = str2Arr(name);
-    return (target) => createGroup(name, target);
+    return (target) => createGroup(target, name, props);
 }
 
 function option(name, params = {}){

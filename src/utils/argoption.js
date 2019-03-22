@@ -20,7 +20,7 @@ async function readStdinSync() {
 }
 
 export default class ArgOption{
-    _parseValue(value){
+    _parseValue(ctx, value){
         //TODO: do argument validation and parsing
         if(this._params.callback)
             value = this._params.callback(ctx, this.key(), value);
