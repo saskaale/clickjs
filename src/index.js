@@ -196,7 +196,7 @@ function option(name, params = {}){
 function argument(name, params = {}){
     return function (target, key, descriptor) {
         _ensureParams(descriptor);
-        descriptor._arguments.push(createArgument(name, params))
+        descriptor._arguments.unshift(createArgument(name, params))
         return descriptor;
     }
 }

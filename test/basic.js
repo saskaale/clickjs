@@ -36,6 +36,13 @@ class Command extends TestingCommand{
     evaluate3(data){
         this._checkCall('evaluate3', data);
     }
+
+    @Click.command("4")
+    @Click.argument("value")
+    @Click.argument("value2", {default: '12'})
+    evaluate4(data){
+        this._checkCall('evaluate4', data);
+    }
 }
 
 
@@ -44,6 +51,11 @@ describe('Basic', function() {
         it('evaluate1', function(done){
             new Command('evaluate1', {}, done).run(['1']);
         });
+        it('evaluate2', function(done){
+            new Command('evaluate2', {name2: '12'}, done).run(['2']);
+        });
+    });
+    describe('#options', function() {
         it('evaluate-defaultValue', function(done){
             new Command('evaluate2', {name2: '12'}, done).run(['2']);
         });
@@ -69,6 +81,14 @@ describe('Basic', function() {
         });
         it('mixed2', function(done){
             new Command('evaluate2', {name2:'a', name: 'b'}, done).run(['2', '--name2=a', '--name', 'b']);
+        });
+    });
+    describe('#arguments', function() {
+        it('basic', function(done){
+            new Command('evaluate3', {value:'a', value2: 'b'}, done).run(['3', 'a', 'b']);
+        });
+        it('default', function(done){
+            new Command('evaluate4', {value:'a', value2: '12'}, done).run(['4', 'a']);
         });
     });
 });
