@@ -11,7 +11,8 @@ class TestingCommand{
 
     _checkCall(name, data){
         assert.equal(name, this._name, `not called correct handler >>${name}<< != >>${this._name}<<`);
-        assert.deepEqual(data, this._data, `data are not equal >>${JSON.stringify(data)}<< != >>${JSON.stringify(this._data)}<<`);
+        if(this._data !== undefined)
+            assert.deepEqual(data, this._data, `data are not equal >>${JSON.stringify(data)}<< != >>${JSON.stringify(this._data)}<<`);
         this._done();
     }
 }
@@ -49,10 +50,10 @@ class Command extends TestingCommand{
 describe('Basic', function() {
     describe('#simple', function() {
         it('evaluate1', function(done){
-            new Command('evaluate1', {}, done).run(['1']);
+            new Command('evaluate1', undefined, done).run(['1']);
         });
         it('evaluate2', function(done){
-            new Command('evaluate2', {name2: '12'}, done).run(['2']);
+            new Command('evaluate2', undefined, done).run(['2']);
         });
     });
     describe('#options', function() {
