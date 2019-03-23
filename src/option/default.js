@@ -50,7 +50,7 @@ export default class DefaultOption extends ArgOption{
 
     key(){
         const key = this._name[this._name.length - 1];
-        return key.replace(/^\-[0-2]/g, '').toLowerCase();
+        return key.replace(/^\-+/g, '').toLowerCase();
     }
 
     match(ctx, cmdargs){

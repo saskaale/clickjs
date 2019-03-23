@@ -77,11 +77,8 @@ function createGroup(target, name, props = {}) {
             return true;
         }
 
-        async run(){
+        async run(args = process.argv.slice(2)){
             //preprocess into object/key value
-    
-            const args = process.argv.slice(2);
-
             await this.execute(this, args);
         }
 
@@ -96,7 +93,7 @@ function createGroup(target, name, props = {}) {
         }
     
         async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
-            const parsedArgs = optsDefinition.map(e=>0);
+            let parsedArgs = optsDefinition.map(e=>0);
 
             while(cmdargs.length > 0){
                 let shiftBy = undefined;
@@ -134,7 +131,7 @@ function createGroup(target, name, props = {}) {
             //parse default options
             for(let i = 0; i < optsDefinition.length; ++i){
                 const arg = optsDefinition[i];
-                if(!parsedArgs[i]){
+                if(parsedArgs[i] <= 0){
                     const defaultVal = await arg.defaultVal();
                     if(defaultVal){
                         parsedParams[arg.key()] = defaultVal;
