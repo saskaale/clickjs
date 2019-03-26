@@ -30,11 +30,11 @@ function command(name, props){
         target._commands.push(new Command(descriptor));
         return descriptor;
     }
-
 }
 
 function createGroup(target, name, props = {}) {
     name = str2Arr(name);
+
     const Group = class extends target{
         static _isClick = true;
 
@@ -77,9 +77,17 @@ function createGroup(target, name, props = {}) {
             return true;
         }
 
+        init(){
+
+        }
+
         async run(args = process.argv.slice(2)){
             //preprocess into object/key value
             await this.execute(this, args);
+        }
+
+        static async run(){
+            return new Group().run();
         }
 
         static group(name, props = {}){
@@ -87,7 +95,18 @@ function createGroup(target, name, props = {}) {
             return function (target) {
                 _ensureCommands(self);
                 const newgroup = createGroup(target, name, props);
-                self._commands.push(new newgroup());
+
+                let instance;
+                const getInstance = (...args) => instance || (instance = new newgroup(...args))
+
+                const fakeclass = {
+                    init: () => {instance = 0},
+                    match: (ctx, ...args) => getInstance(ctx).match(ctx, ...args),
+                    arglength: (ctx, ...args) => getInstance(ctx).arglength(ctx, ...args),
+                    help: (ctx, ...args) => getInstance(ctx).help(ctx, ...args),
+                    execute: (ctx, ...args) => getInstance(ctx).execute(ctx, ...args)
+                }
+                self._commands.push(fakeclass);
                 return newgroup;
             }
         }
@@ -156,6 +175,7 @@ function createGroup(target, name, props = {}) {
             let matches = 0;
             for(let i = 0; i < commands.length; i++){
                 const command = commands[i];
+                command.init()
                 if(command.match(this, cmdargs)){
                     const arglength = command.arglength();
                     await command.execute(ctx, cmdargs.slice(arglength), options, parsedParams, ...rest);
