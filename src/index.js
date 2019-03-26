@@ -86,8 +86,8 @@ function createGroup(target, name, props = {}) {
             await this.execute(this, args);
         }
 
-        static async run(){
-            return new Group().run();
+        static async run(args = process.argv.slice(2)){
+            return new Group().run(args);
         }
 
         static group(name, props = {}){

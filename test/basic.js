@@ -56,6 +56,19 @@ describe('Basic', function() {
             new Command('evaluate2', undefined, done).run(['2']);
         });
     });
+    describe('#static', function() {
+        it('dispatch', function(done){
+            @Click.group()
+            class TestCommand extends TestingCommand{
+                @Click.command("1")
+                evaluate1(data){
+                    done()
+                }
+            }
+
+            TestCommand.run(['1']);
+        });
+    });
     describe('#options', function() {
         it('evaluate-defaultValue', function(done){
             new Command('evaluate2', {name2: '12'}, done).run(['2']);
