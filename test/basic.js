@@ -44,6 +44,18 @@ class Command extends TestingCommand{
     evaluate4(data){
         this._checkCall('evaluate4', data);
     }
+
+    @Click.command("5")
+    @Click.option("--prefixed", {callback: (v) => "_"+v})
+    evaluate5(data){
+        this._checkCall('evaluate5', data);
+    }
+
+    @Click.command("6")
+    @Click.argument("prefixed", {callback: (v) => "_"+v})
+    evaluate6(data){
+        this._checkCall('evaluate6', data);
+    }
 }
 
 
@@ -96,6 +108,9 @@ describe('Basic', function() {
         it('mixed2', function(done){
             new Command('evaluate2', {name2:'a', name: 'b'}, done).run(['2', '--name2=a', '--name', 'b']);
         });
+        it('callback', function(done){
+            new Command('evaluate5', {prefixed:'_a'}, done).run(['5', '--prefixed=a']);
+        });
     });
     describe('#arguments', function() {
         it('basic', function(done){
@@ -103,6 +118,9 @@ describe('Basic', function() {
         });
         it('default', function(done){
             new Command('evaluate4', {value:'a', value2: '12'}, done).run(['4', 'a']);
+        });
+        it('callback', function(done){
+            new Command('evaluate6', {prefixed:'_a'}, done).run(['6', 'a']);
         });
     });
 });
