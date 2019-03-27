@@ -31,9 +31,17 @@ export default class ArgOption{
         return readed <= 0;
     }
 
-    async defaultVal(){
+    async defaultVal(ctx){
+        if(this._params.envvar !== undefined){
+            const val = process.env[this._params.envvar];
+            if(val){
+                return this._parseValue(ctx, val);
+            }
+        }
+
+
         if(typeof this._params.default === 'function'){
-            return this._params.default();
+            return this._params.default(ctx, this.key());
         }
         if(this._params.default !== undefined){
             return this._params.default;
@@ -43,7 +51,7 @@ export default class ArgOption{
         if(this._params.prompt){
             process.stdout.write(`${this._params.prompt}:`);
             let readed = await readStdinSync();
-            return this._parseValue(readed);
+            return this._parseValue(ctx, readed);
         }
     }
 }

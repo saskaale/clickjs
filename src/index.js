@@ -151,9 +151,9 @@ function createGroup(target, name, props = {}) {
             for(let i = 0; i < optsDefinition.length; ++i){
                 const arg = optsDefinition[i];
                 if(parsedArgs[i] <= 0){
-                    const defaultVal = await arg.defaultVal();
+                    const defaultVal = await arg.defaultVal(this);
                     if(defaultVal){
-                        parsedParams[arg.key()] = defaultVal;
+                        parsedParams[arg.key(this)] = defaultVal;
                         parsedArgs[i]++;    
                     }
                 }
