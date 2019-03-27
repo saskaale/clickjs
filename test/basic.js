@@ -12,7 +12,7 @@ class TestingCommand{
     _checkCall(name, data){
         assert.equal(name, this._name, `not called correct handler >>${name}<< != >>${this._name}<<`);
         if(this._data !== undefined)
-            assert.deepEqual(data, this._data, `data are not equal >>${JSON.stringify(data)}<< != >>${JSON.stringify(this._data)}<<`);
+            assert.deepStrictEqual(data, this._data, `data are not equal >>${JSON.stringify(data)}<< != >>${JSON.stringify(this._data)}<<`);
         this._done();
     }
 }
@@ -110,6 +110,22 @@ describe('Basic', function() {
         });
         it('callback', function(done){
             new Command('evaluate5', {prefixed:'_a'}, done).run(['5', '--prefixed=a']);
+        });
+    });
+    describe('#defaults', function(){
+        it('callback', function(done){
+            @Click.group()
+            class TestCommand extends TestingCommand{
+                @Click.command("1")
+                @Click.option("--number", {default: () => 5})
+                evaluate1(data){
+                    const expects = {"number": 5};
+                    assert.deepStrictEqual(data, expects, `data are not equal >>${JSON.stringify(data)}<< != >>${JSON.stringify(expects)}<<`);
+                    done()
+                }
+            }
+
+            TestCommand.run(['1']);
         });
     });
     describe('#arguments', function() {
