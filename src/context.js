@@ -29,6 +29,9 @@ class Context{
     static exit(...args){
         return process.exit(...args);
     }
+    static write(l){
+        process.stdout.write(l);
+    }
     static async readline(){
         return await readStdinAsync();
     }

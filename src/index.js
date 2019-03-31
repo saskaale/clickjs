@@ -146,12 +146,12 @@ function createGroup(target, name, props = {}) {
                 //TODO: Possible use array.shift() ???
                 cmdargs = cmdargs.slice(shiftBy || 1);
             }
-    
+
             //parse default options
             for(let i = 0; i < optsDefinition.length; ++i){
                 const arg = optsDefinition[i];
                 if(parsedArgs[i] <= 0){
-                    const defaultVal = await arg.defaultVal(this);
+                    const defaultVal = await arg.defaultVal(this, context);
                     if(defaultVal){
                         parsedParams[arg.key(this)] = defaultVal;
                         parsedArgs[i]++;    
@@ -192,7 +192,7 @@ function createGroup(target, name, props = {}) {
 
             if(commands.length && matches <= 0){
                 this.print_help_msg(context);
-                process.exit(0);
+                context.exit(0);
             }
         }
     };

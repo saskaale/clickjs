@@ -1,4 +1,5 @@
 import assert from 'assert';
+import {Context} from '../../src/index';
 
 
 export default class TestingCommand{
@@ -26,5 +27,6 @@ const createStatic = (getClass, name, data, done) => {
 
     return getClass(_checkAll);
 }
+
 
 export {createStatic};

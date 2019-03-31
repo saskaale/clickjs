@@ -12,7 +12,7 @@ export default class ArgOption{
 
     async defaultVal(self, context){
         if(this._params.envvar !== undefined){
-            const val = process.env[this._params.envvar];
+            const val = context.env[this._params.envvar];
             if(val){
                 return this._parseValue(self, context, val);
             }
@@ -28,7 +28,7 @@ export default class ArgOption{
         
         //reade from prompt
         if(this._params.prompt){
-            process.stdout.write(`${this._params.prompt}:`);
+            context.write(`${this._params.prompt}:`);
             let readed = await context.readline();
             return this._parseValue(self, context, readed);
         }

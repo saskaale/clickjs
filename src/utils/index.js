@@ -44,9 +44,6 @@ function print_help_msg(context){
             )
     }
 
-    console.log("CONTEXT");
-    console.log(context);
-
     context.console.log(text.join('\n'));
 }
 
