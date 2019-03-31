@@ -1,8 +1,9 @@
 import Click from '../src/index';
 import assert from 'assert';
+import TestingCommand, {createStatic} from './base/testingCommand';
 
 
-class TestingCommand{
+/*class TestingCommand{
     constructor(name,data, done){
         this._name = name;
         this._data = data;
@@ -16,6 +17,7 @@ class TestingCommand{
         this._done();
     }
 }
+*/
 
 @Click.group()
 class Command extends TestingCommand{
