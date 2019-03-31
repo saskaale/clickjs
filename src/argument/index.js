@@ -36,12 +36,12 @@ export default class Argument extends ArgOption{
         return this._name;
     }
 
-    match(ctx, cmdargs){
+    match(self, context, cmdargs){
         return cmdargs.length > 0 ? 1 : 0;
     }
 
-    async value(ctx, cmdargs){
-        return this._parseValue(ctx, cmdargs[0]);
+    async value(self, context, cmdargs){
+        return this._parseValue(self, context, cmdargs[0]);
     }
 }
 

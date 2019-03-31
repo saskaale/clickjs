@@ -16,7 +16,7 @@ export default class DefaultOption extends ArgOption{
         }
     }
 
-    async value(ctx, cmdargs){
+    async value(self, context, cmdargs){
         const arg0 = this._splitArgToKeyVal(cmdargs[0]);
 
         let ret;
@@ -26,14 +26,14 @@ export default class DefaultOption extends ArgOption{
             ret = cmdargs[1];
         }
 
-        return await this._parseValue(ctx, ret);
+        return await this._parseValue(self, context, ret);
     }
 
     isNeeded(){
         return this._params.default === undefined && this._params.prompt !== undefined;
     }
 
-    help(ctx){
+    help(self, context){
         let text = this._name.join(" ").padEnd(25,' ');
 
         if(this._params.help){
@@ -53,7 +53,7 @@ export default class DefaultOption extends ArgOption{
         return key.replace(/^\-+/g, '').toLowerCase();
     }
 
-    match(ctx, cmdargs){
+    match(self, context, cmdargs){
         const arg0 = this._splitArgToKeyVal(cmdargs[0]);
         const matched = arg0.length > 1 ? 1 : 2; //"consumed" element from the cmdargs
 

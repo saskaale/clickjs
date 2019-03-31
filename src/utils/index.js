@@ -6,7 +6,7 @@ function str2Arr(val){
     return val;    
 }
 
-function print_help_msg(){
+function print_help_msg(context){
     let text = [
         'Usage:',
         '',
@@ -44,7 +44,10 @@ function print_help_msg(){
             )
     }
 
-    console.log(text.join('\n'));
+    console.log("CONTEXT");
+    console.log(context);
+
+    context.console.log(text.join('\n'));
 }
 
 export {str2Arr, print_help_msg, ArgOption}

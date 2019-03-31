@@ -1,7 +1,7 @@
 import {str2Arr, print_help_msg} from './utils';
 import {createOption, helpOption} from './option';
 import {createArgument} from './argument';
-
+import Context from './context';
 
 function _ensureParams(descriptor){
     if(!descriptor._arguments)
@@ -56,15 +56,15 @@ function createGroup(target, name, props = {}) {
             return (props._fun ? props._fun._arguments : this._arguments) || [];
         }
 
-        print_help_msg(){
-            print_help_msg.call(this);
+        print_help_msg(context){
+            print_help_msg.call(this, context);
         }
                 
         help(){
             return `${(name ? name.join(',') : "").padEnd(20,' ')} ${props._help}`;
         }
 
-        match(ctx, cliargs){
+        match(self, context, cliargs){
             if(name === undefined){
                 return true;
             }
@@ -81,13 +81,13 @@ function createGroup(target, name, props = {}) {
 
         }
 
-        async run(args = process.argv.slice(2)){
+        async run(args = process.argv.slice(2), context = Context){
             //preprocess into object/key value
-            await this.execute(this, args);
+            await this.execute(this, context, args);
         }
 
-        static async run(args = process.argv.slice(2)){
-            return new Group().run(args);
+        static async run(args = process.argv.slice(2), context = Context){
+            return await new Group().run(args, context);
         }
 
         static group(name, props = {}){
@@ -101,17 +101,17 @@ function createGroup(target, name, props = {}) {
 
                 const fakeclass = {
                     init: () => {instance = 0},
-                    match: (ctx, ...args) => getInstance(ctx).match(ctx, ...args),
-                    arglength: (ctx, ...args) => getInstance(ctx).arglength(ctx, ...args),
-                    help: (ctx, ...args) => getInstance(ctx).help(ctx, ...args),
-                    execute: (ctx, ...args) => getInstance(ctx).execute(ctx, ...args)
+                    match: (self, ...args) => getInstance(self).match(self, ...args),
+                    arglength: (self, ...args) => getInstance(self).arglength(self, ...args),
+                    help: (self, ...args) => getInstance(self).help(self, ...args),
+                    execute: (self, ...args) => getInstance(self).execute(self, ...args)
                 }
                 self._commands.push(fakeclass);
                 return newgroup;
             }
         }
     
-        async parseCmdOptions(ctx, cmdargs, optsDefinition, parsedParams = {}){
+        async parseCmdOptions(self, context, cmdargs, optsDefinition, parsedParams = {}){
             let parsedArgs = optsDefinition.map(e=>0);
 
             while(cmdargs.length > 0){
@@ -119,10 +119,10 @@ function createGroup(target, name, props = {}) {
                 for( let i = 0; i < optsDefinition.length; ++i ){
                     const optRepresentation = optsDefinition[i];
     
-                    const matchedLength = optRepresentation.match(this,cmdargs);
+                    const matchedLength = optRepresentation.match(this, context, cmdargs);
     
                     if(matchedLength > 0){
-                        if(parsedArgs[i] && !optRepresentation.reuse(this, parsedArgs[i])){
+                        if(parsedArgs[i] && !optRepresentation.reuse(this, context, parsedArgs[i])){
                             continue;
                         }
             
@@ -130,7 +130,7 @@ function createGroup(target, name, props = {}) {
                             //TODO: add error for reuse of options
                             console.warn(`error of reusing option >>${optRepresentation.key()}<<`)
                         }
-                        parsedParams[optRepresentation.key(this)] = await optRepresentation.value(this,cmdargs);
+                        parsedParams[optRepresentation.key(this, context)] = await optRepresentation.value(this, context, cmdargs);
                         parsedArgs[i]++;
     
                         shiftBy = matchedLength;
@@ -169,16 +169,16 @@ function createGroup(target, name, props = {}) {
             return parsedParams;
         }    
 
-        async execute(ctx, cmdargs, options = [], parsedParams = {}, ...rest){
+        async execute(self, context, cmdargs, options = [], parsedParams = {}, ...rest){
             const commands = this._getCommands();
 
             let matches = 0;
             for(let i = 0; i < commands.length; i++){
                 const command = commands[i];
                 command.init()
-                if(command.match(this, cmdargs)){
+                if(command.match(this, context, cmdargs)){
                     const arglength = command.arglength();
-                    await command.execute(ctx, cmdargs.slice(arglength), options, parsedParams, ...rest);
+                    await command.execute(self, context, cmdargs.slice(arglength), options, parsedParams, ...rest);
                     matches++;
                 }
             }
@@ -186,12 +186,12 @@ function createGroup(target, name, props = {}) {
             const fun = props._fun;
             if(fun){
                 options = options.concat(this._getOptions()).concat(this._getArguments());
-                cmdargs = await this.parseCmdOptions(ctx, cmdargs, options, parsedParams);    
-                fun.value.call(ctx, parsedParams);    
+                cmdargs = await this.parseCmdOptions(self, context, cmdargs, options, parsedParams);
+                fun.value.call(self, parsedParams);    
             }
 
             if(commands.length && matches <= 0){
-                this.print_help_msg();
+                this.print_help_msg(context);
                 process.exit(0);
             }
         }
@@ -240,3 +240,4 @@ const Click = {
 
 
 export default Click;
+export {Context};

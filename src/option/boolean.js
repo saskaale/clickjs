@@ -6,7 +6,7 @@ export default class BooleanOption extends DefaultOption{
         this._params = params;
     }
 
-    value(ctx, cmdargs){
+    value(self, context, cmdargs){
         const arg0 = cmdargs[0];
         const found = this._name.find(([pos, neg])=> arg0 === pos || arg0 === neg);
         if(arg0 === found[0])
@@ -24,7 +24,7 @@ export default class BooleanOption extends DefaultOption{
         return key.replace(/^\-[0-2]/g, '').toLowerCase();
     }
 
-    match(ctx, cmdargs){
+    match(self, context, cmdargs){
         const arg0 = cmdargs[0];
         const found = this._name.some(([pos, neg])=> arg0 === pos || arg0 === neg);
 

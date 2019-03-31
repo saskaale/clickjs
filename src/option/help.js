@@ -5,9 +5,9 @@ export default class HelpOption extends DefaultOption{
         super(["--help"], {help: "Show this message and exit."});
     }
 
-    value(ctx){
-        ctx.print_help_msg();
-        process.exit(0);
+    value(self, context){
+        self.print_help_msg(context);
+        context.exit(0);
     }
 
     isNeeded(){
