@@ -1,11 +1,10 @@
 {
-  "name": "clickjs",
-  "version": "0.0.1",
-  "description": "JS port of click.js library",
+  "name": "python-clickjs",
+  "version": "0.0.2",
+  "description": "JS port of fabulous Python click argument parsing library",
   "main": "src/index.js",
   "author": "Ales Saska",
-  "license": "MIT",
-  "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "test": "mocha --require @babel/register"
   },
@@ -19,6 +18,13 @@
     "@babel/preset-env": "^7.3.4",
     "@babel/runtime": "^7.4.2"
   },
+  "contributors": [
+    {
+      "name": "Ales Saska",
+      "email": "mail@alessaska.cz",
+      "url": "http://alessaska.cz"
+    }
+  ],
   "devDependencies": {
     "mocha": "^6.0.2"
   }
