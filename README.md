@@ -1,5 +1,5 @@
 # clickjs
-JavaScript port of famous Python click library for argument parsing
+JavaScript port of famous Python click library for argument parsing [![Build Status](https://travis-ci.org/saskaale/clickjs.svg?branch=master)](https://travis-ci.org/saskaale/clickjs)
 
 
 
