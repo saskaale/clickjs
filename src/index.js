@@ -56,12 +56,19 @@ function createGroup(target, name, props = {}) {
             return (props._fun ? props._fun._arguments : this._arguments) || [];
         }
 
+        //print multiline help detailed info
         print_help_msg(context){
             print_help_msg.call(this, context);
         }
-                
+
+        //Command line example
+        usageinfo(self){
+            return `${self.usageinfo()} ${(name ? name.join(',') : "")}`;
+        }
+
+        //one-line summary help string
         help(){
-            return `${(name ? name.join(',') : "").padEnd(20,' ')} ${props._help}`;
+            return `${(name ? name.join(',') : "").padEnd(20,' ')} ${props.help || `command >>${name}<<`}`;
         }
 
         match(self, context, cliargs){
