@@ -67,7 +67,7 @@ Probably you have more plugins and presets in your `.babelrc` already, note that
 ### Usage
 
 ```javascript
-import Click from '../src/index';
+import Click from 'clickjs';
 
 @Click.group()
 class Command{
