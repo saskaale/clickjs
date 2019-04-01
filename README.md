@@ -13,12 +13,12 @@ JavaScript port of famous Python click library for argument parsing [![Build Sta
 ### Installation
 Install the package npm:
 ```console
-$ npm install clickjs --save
+$ npm install python-clickjs --save
 ```
 
 Alternatively if you are using yarn:
 ```console
-$ yarn add clickjs
+$ yarn add python-clickjs
 ```
 
 
